@@ -1,13 +1,14 @@
-import os
 import json
-from historical_data_analysis import portfolio_past_outcome, save_summary
-from simulation import simulate_outcome
-import project_helpers as hp
+import os
 
 import matplotlib.pyplot as plt
 
-def analyze_portfolio(portfolio_name):
+import project_helpers as hp
+from historical_data_analysis import portfolio_past_outcome, save_summary
+from simulation import simulate_outcome
 
+
+def analyze_portfolio(portfolio_name):
     # get paths
     current_dir_path = os.path.dirname(os.path.abspath(__file__))
     project_abs_path = hp.get_project_abs_path("investment_calculator", current_dir_path)
@@ -60,4 +61,3 @@ def analyze_portfolio(portfolio_name):
         save_summary(stock_summary, stock_name, f"{result_dir}/{stock_name}_summary.txt")
 
     return portfolio_outcome
-

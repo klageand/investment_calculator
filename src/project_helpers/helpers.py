@@ -1,5 +1,6 @@
 import os
 
+
 def get_project_abs_path(project_name: str, current_dir) -> str:
     """Returns absolute path of the project directory. The project directory must be a parent directory of the given
     `current_dir`.

@@ -11,6 +11,3 @@ portfolio_outcome = analyze_portfolio(portfolio_name)
 # TODO: solve investment time configuration
 # TODO: plot risk assessment
 # TODO: analyze etf overlap
-
-
-    

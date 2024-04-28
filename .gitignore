@@ -2,6 +2,6 @@
 *.env
 
 # virtual environment
-venv
+*venv
 
 *__pycache__
