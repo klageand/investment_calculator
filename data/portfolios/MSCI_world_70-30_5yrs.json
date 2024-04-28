@@ -1,0 +1,24 @@
+{
+    "portfolio": [
+        {
+            "symbol": "URTH",
+            "investment_time": 5,
+            "initial_investment": 700,
+            "monthly_investment": 70,
+            "quarter_investment": 0,
+            "bi_annual_investment": 0,
+            "annual_investment": 0,
+            "dividend_reinvestment": true
+        },
+        {
+            "symbol": "EEM",
+            "investment_time": 5,
+            "initial_investment": 300,
+            "monthly_investment": 30,
+            "quarter_investment": 0,
+            "bi_annual_investment": 0,
+            "annual_investment": 0,
+            "dividend_reinvestment": true
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "portfolio": [
+        {
+            "symbol": "URTH",
+            "investment_time": 10,
+            "initial_investment": 1000,
+            "monthly_investment": 100,
+            "quarter_investment": 0,
+            "bi_annual_investment": 0,
+            "annual_investment": 0,
+            "dividend_reinvestment": true
+        }
+    ]
+}
