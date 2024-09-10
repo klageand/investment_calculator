@@ -4,10 +4,12 @@ import pandas as pd
 import historical_data_analysis as hda
 
 
-def simulate_outcome(stock_config, monthly_mean, monthly_std, iterations=100):
+def simulate_outcome(stock_config, monthly_change_mean, monthly_change_std, iterations=100):
     number_of_months = stock_config["investment_time"] * 12
 
-    df_dict_simulated = simulate_data(stock_config, monthly_mean, monthly_std, number_of_months, iterations)
+    df_dict_simulated = simulate_data(
+        stock_config, monthly_change_mean, monthly_change_std, number_of_months, iterations
+    )
     df_dict_calc = calculate_outcome(df_dict_simulated, number_of_months, iterations)
     summary = summarize_simulation_outcome(df_dict_simulated, df_dict_calc, number_of_months, iterations)
 
@@ -53,7 +55,7 @@ def summarize_simulation_outcome(df_dict_simulated, df_dict_calc, number_of_mont
     return simulation_summary
 
 
-def simulate_data(stock_config, monthly_mean, monthly_std, number_of_months, iterations):
+def simulate_data(stock_config, monthly_change_mean, monthly_change_std, number_of_months, iterations):
     static_cols = [
         "monthly_money",
         "quarterly_money",
@@ -68,7 +70,7 @@ def simulate_data(stock_config, monthly_mean, monthly_std, number_of_months, ite
         for col in simulated_cols
     }
     for i in range(iterations):
-        df_simulation = get_simulated_df(stock_config, monthly_mean, monthly_std)
+        df_simulation = get_simulated_df(stock_config, monthly_change_mean, monthly_change_std)
 
         if i == 0:
             for col in static_cols:
@@ -84,11 +86,11 @@ def simulate_data(stock_config, monthly_mean, monthly_std, number_of_months, ite
     return df_dict_simulated
 
 
-def get_simulated_df(stock_config, monthly_mean, monthly_std):
+def get_simulated_df(stock_config, monthly_change_mean, monthly_change_std):
     number_of_months = stock_config["investment_time"] * 12
 
     df_simulation = pd.DataFrame()
-    random_return_values = np.random.normal(monthly_mean, monthly_std, number_of_months)
+    random_return_values = np.random.normal(monthly_change_mean, monthly_change_std, number_of_months)
     df_simulation.loc[:, "simulated_change"] = random_return_values + 1
 
     df_simulation.loc[1:, "monthly_money"] = stock_config["monthly_investment"]

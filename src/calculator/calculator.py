@@ -8,7 +8,7 @@ from historical_data_analysis import portfolio_past_outcome, save_summary
 from simulation import simulate_outcome
 
 
-def analyze_portfolio(portfolio_name):
+def analyze_portfolio(portfolio_name: str) -> dict:
     # get paths
     current_dir_path = os.path.dirname(os.path.abspath(__file__))
     project_abs_path = hp.get_project_abs_path("investment_calculator", current_dir_path)

@@ -5,12 +5,12 @@ import pandas as pd
 from .historical_data_analysis import past_stock_investment_outcome
 
 
-def collect_data(portfolio):
-    portfolio_outcome = {"data": {}, "summary": {}}
+def collect_data(portfolio: dict) -> dict:
+    portfolio_outcome: dict = {"data": {}, "summary": {}}
     for params in portfolio:
-        outcome = past_stock_investment_outcome(params)
-        data = outcome["data"]
-        summary = outcome["summary"]
+        outcome: dict = past_stock_investment_outcome(params)
+        data: pd.DataFrame = outcome["data"]
+        summary: dict = outcome["summary"]
 
         portfolio_outcome["data"][params["symbol"]] = data
         portfolio_outcome["summary"][params["symbol"]] = summary
@@ -18,7 +18,7 @@ def collect_data(portfolio):
     return portfolio_outcome
 
 
-def combine_data(data):
+def combine_data(data: pd.DataFrame) -> pd.DataFrame:
     df_combined = pd.DataFrame(columns=list(data.values())[0].columns)
     for stock_name, stock_df in data.items():
         df_combined = df_combined.merge(
@@ -61,16 +61,16 @@ def combine_data(data):
     return df_combined
 
 
-def get_combined_summary(df_combined):
-    final_amount = df_combined.loc[df_combined["date"] == df_combined["date"].max(), "total_combined"].iloc[0]
-    input_amount = df_combined.loc[df_combined["date"] == df_combined["date"].max(), "input_combined"].iloc[0]
+def get_combined_summary(df_combined: pd.DataFrame) -> dict:
+    final_amount: float = df_combined.loc[df_combined["date"] == df_combined["date"].max(), "total_combined"].iloc[0]
+    input_amount: float = df_combined.loc[df_combined["date"] == df_combined["date"].max(), "input_combined"].iloc[0]
     # general_monthly_volatility = df_combined["total_return"].std() * 100
     # general_monthly_mean_return = df_combined["total_return"].mean() * 100
-    total_dividend = sum(df_combined["dividend_gain_combined"].iloc[1:])
-    annual_return = (
+    total_dividend: float = sum(df_combined["dividend_gain_combined"].iloc[1:])
+    annual_return: float = (
         math.prod(df_combined.loc[1:, "return_combined"].to_list()) ** (12 / (len(df_combined) - 1)) - 1
     ) * 100
-    summary = {
+    summary: dict = {
         "final_amount": round(final_amount, 2),
         "input_amount": round(input_amount, 2),
         "total_yield_amount": round(final_amount - input_amount, 2),
@@ -81,10 +81,10 @@ def get_combined_summary(df_combined):
     return summary
 
 
-def portfolio_past_outcome(portfolio):
-    portfolio_outcome = collect_data(portfolio)
-    df_combined = combine_data(portfolio_outcome["data"])
-    summary_combined = get_combined_summary(df_combined)
+def portfolio_past_outcome(portfolio: dict) -> dict:
+    portfolio_outcome: dict = collect_data(portfolio)
+    df_combined: pd.DataFrame = combine_data(portfolio_outcome["data"])
+    summary_combined: dict = get_combined_summary(df_combined)
     summary_combined["investment_time"] = max([p["investment_time"] for p in portfolio])
 
     portfolio_outcome["data"] = df_combined

@@ -11,7 +11,7 @@ load_dotenv()
 API_KEY = os.getenv("ALPHAVANTAGE_API_KEY")
 
 
-def get_raw_data(symbol):
+def get_raw_data(symbol: str) -> pd.DataFrame:
     url = f"https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol={symbol}&apikey={API_KEY}"
     response = requests.get(url)
     data = response.json()
@@ -20,7 +20,7 @@ def get_raw_data(symbol):
     return df
 
 
-def clean_data(df):
+def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     # update column names ('1. open' -> 'open')
     cols_with_numbers = df.columns
     cols_without_numbers = [" ".join(elem.split(" ")[1:]) for elem in cols_with_numbers]
@@ -47,7 +47,7 @@ def clean_data(df):
     return df
 
 
-def filter_data(df, filter_params):
+def filter_data(df: pd.DataFrame, filter_params: dict) -> pd.DataFrame:
     df_filtered = df.copy()
 
     if filter_params.get("start_date", None) is not None:
@@ -68,18 +68,20 @@ def filter_data(df, filter_params):
     return df_filtered
 
 
-def calculate_returns(df_filtered, start_money, regular_investments, dividend_reinvestment):
+def calculate_returns(
+    df_filtered: pd.DataFrame, start_money: float, regular_investments: dict, dividend_reinvestment: bool
+) -> pd.DataFrame:
     df_calc = df_filtered.copy()
 
     # unpack regular investments
-    monthly_money = regular_investments["monthly_money"]
-    quarterly_money = regular_investments["quarterly_money"]
-    bi_annual_money = regular_investments["bi_annual_money"]
-    annual_money = regular_investments["annual_money"]
+    monthly_money: float = regular_investments["monthly_money"]
+    quarterly_money: float = regular_investments["quarterly_money"]
+    bi_annual_money: float = regular_investments["bi_annual_money"]
+    annual_money: float = regular_investments["annual_money"]
 
     # get initial investment buy value
-    earliest_open = df_calc["date"].min()
-    start_val = df_calc.loc[df_calc["date"] == earliest_open, "open"].iloc[0]
+    earliest_open: datetime = df_calc["date"].min()
+    start_val: float = df_calc.loc[df_calc["date"] == earliest_open, "open"].iloc[0]
 
     # calculate sell values at the end of month
     df_calc.loc[:, "money"] = df_calc["close"] / start_val * start_money
@@ -96,9 +98,9 @@ def calculate_returns(df_filtered, start_money, regular_investments, dividend_re
     df_calc.loc[0, "total"] = df_calc.loc[0, "money"]
     for i in range(1, len(df_calc)):
         # update regular investment amounts
-        current_quarterly_money = quarterly_money
-        current_bi_annual_money = bi_annual_money
-        current_annual_money = annual_money
+        current_quarterly_money: float = quarterly_money
+        current_bi_annual_money: float = bi_annual_money
+        current_annual_money: float = annual_money
 
         if (i - 1) % 3 != 0:
             current_quarterly_money = 0
@@ -120,7 +122,7 @@ def calculate_returns(df_filtered, start_money, regular_investments, dividend_re
             + df_calc.loc[i, "annual_money"]
         )
         # calculate divident gain
-        dividend_gain = df_calc.loc[i, "total"] * df_calc.loc[i, "dividend"]
+        dividend_gain: float = df_calc.loc[i, "total"] * df_calc.loc[i, "dividend"]
         df_calc.loc[i, "dividend_gain"] = dividend_gain
         if dividend_reinvestment:
             df_calc.loc[i, "total"] += dividend_gain
@@ -144,7 +146,9 @@ def calculate_returns(df_filtered, start_money, regular_investments, dividend_re
     return df_calc
 
 
-def calculate_input_for_interval(df_calc, monthly_interval, amount, start_money):
+def calculate_input_for_interval(
+    df_calc: pd.DataFrame, monthly_interval: int, amount: float, start_money: float
+) -> pd.DataFrame:
     # add regular amount
     df_calc.loc[(df_calc["month_number"] - 1) % monthly_interval == 0, "input"] += (
         (df_calc["month_number"] - 1) / monthly_interval + 1
@@ -157,7 +161,7 @@ def calculate_input_for_interval(df_calc, monthly_interval, amount, start_money)
     return df_calc
 
 
-def get_summary(df_calc):
+def get_summary(df_calc: pd.DataFrame) -> pd.DataFrame:
     final_amount = df_calc.loc[df_calc["date"] == df_calc["date"].max(), "total"].iloc[0]
     input_amount = df_calc.loc[df_calc["date"] == df_calc["date"].max(), "input"].iloc[0]
     total_dividend = sum(df_calc["dividend_gain"].iloc[1:])
@@ -197,35 +201,35 @@ def get_general_summary(df):
     return general_summary
 
 
-def past_stock_investment_outcome(params):
+def past_stock_investment_outcome(params: dict) -> dict:
     try:
         # start_date_str = params["start_date"]
-        time_frame = params["investment_time"]
-        symbol = params["symbol"]
-        start_money = params["initial_investment"]
+        time_frame: float = params["investment_time"]
+        symbol: str = params["symbol"]
+        start_money: float = params["initial_investment"]
     except KeyError as error:
         print("Missing arguments: ", error)
         print("received payload: ", params)
         raise error
 
-    regular_investments = {
+    regular_investments: dict = {
         "monthly_money": params.get("monthly_investment", 0),
         "quarterly_money": params.get("quarter_investment", 0),
         "bi_annual_money": params.get("bi_annual_investment", 0),
         "annual_money": params.get("annual_investment", 0),
     }
-    dividend_reinvestment = params.get("dividend_reinvestment", True)
+    dividend_reinvestment: bool = params.get("dividend_reinvestment", True)
 
-    df = get_raw_data(symbol)
-    df = clean_data(df)
-    df_filtered = filter_data(df, {"time_frame": time_frame})
-    df_calc = calculate_returns(df_filtered, start_money, regular_investments, dividend_reinvestment)
-    summary = get_summary(df_calc)
-    general_summary = get_general_summary(df)
+    df: pd.DataFrame = get_raw_data(symbol)
+    df: pd.DataFrame = clean_data(df)
+    df_filtered: pd.DataFrame = filter_data(df, {"time_frame": time_frame})
+    df_calc: pd.DataFrame = calculate_returns(df_filtered, start_money, regular_investments, dividend_reinvestment)
+    summary: dict = get_summary(df_calc)
+    general_summary: dict = get_general_summary(df)
     summary["general"] = general_summary
     summary["investment_time"] = time_frame
 
-    outcome = {"data": df_calc, "summary": summary}
+    outcome: dict = {"data": df_calc, "summary": summary}
 
     return outcome
 
